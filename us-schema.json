@@ -1,0 +1,68 @@
+{
+  "type": "record",
+  "name": "UserEvent",
+  "fields": [
+    {
+      "name": "user_id",
+      "type": {
+        "type": "string",
+        "arg.properties": {
+          "options": ["u2001", "u2002", "u2003", "u2004", "u2005"]
+        }
+      }
+    },
+    {
+      "name": "region",
+      "type": {
+        "type": "string",
+        "arg.properties": {
+          "options": ["us"]
+        }
+      }
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "string",
+        "arg.properties": {
+          "options": ["login", "purchase", "support_ticket"]
+        }
+      }
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "arg.properties": {
+          "iteration": { "start": 1000000 }
+        }
+      }
+    },
+    {
+      "name": "raw_email",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "arg.properties": {
+            "options": ["user1@example.com", "user2@example.com"]
+          }
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "raw_phone",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "arg.properties": {
+            "options": ["+919000000001", "+919000000002"]
+          }
+        }
+      ],
+      "default": null
+    }
+  ]
+}
