@@ -8,7 +8,9 @@ Built in ~20 hours for a Confluent challenge.
 
 ## Demo
 
-PASTE_VIDEO_LINK_HERE
+[![Watch the demo on YouTube](https://img.youtube.com/vi/nBqiKxcUtZ4/maxresdefault.jpg)](https://youtu.be/nBqiKxcUtZ4)
+
+*Click the image to watch the 2-minute demo on YouTube.*
 
 ## The Problem
 
