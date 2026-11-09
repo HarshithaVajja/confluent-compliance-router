@@ -6,8 +6,6 @@ A real-time data governance pipeline built on Confluent Cloud. It checks every e
 
 Built in ~20 hours for a Confluent challenge.
 
-> **Status:** the live pipeline was shut down in November 2026. The results and screenshots below are from the September 2026 run. Everything needed to rebuild it is in this repo (see [How to Reproduce](#how-to-reproduce)).
-
 ## Demo
 
 [![Watch the demo on YouTube](https://img.youtube.com/vi/nBqiKxcUtZ4/maxresdefault.jpg?v=2)](https://youtu.be/nBqiKxcUtZ4)
@@ -104,7 +102,7 @@ Full path including the Elasticsearch sink:
 4. Create a Flink compute pool in the same region, open a SQL workspace, and select the cluster as the database.
 5. Run the statements in [`flink-queries.sql`](flink-queries.sql) in order (Steps 2–4), then the verification queries.
 6. Open **Stream Lineage** on the cluster to see the full path.
-7. **When you're done, delete the connectors, the Flink compute pool and the cluster.** They are billed by the hour and keep running after you close the browser, and after the free trial credit runs out the charges go to your card. Stopping a Flink statement is not enough on its own.
+7. When you're done, delete the connectors, the Flink compute pool and the cluster. Stopping a Flink statement on its own doesn't remove them.
 
 ## Known Limitations
 
@@ -118,7 +116,7 @@ Full path including the Elasticsearch sink:
 ## Lessons Learned
 
 - **Tagging is not routing.** Adding a `status` column was quick, but real protection means downstream consumers should never be able to read quarantined data at all.
-- **Cloud resources don't stop when the project does.** I stopped the Flink queries I could see but left the connectors, compute pool and cluster running. They used up the trial credit and kept billing for weeks. Now I delete everything the day a project ends and check the billing page before closing the tab.
+- **Test the rules, not just the pipeline.** Using random test data and checking the expected rate (~62%) against the actual one (59%) is what proved the detection logic genuinely works.
 - **Write down what failed.** The Elasticsearch sink never worked, but documenting the config, the curl test and the error is more useful to the next person than hiding it.
 
 ## Next Steps
