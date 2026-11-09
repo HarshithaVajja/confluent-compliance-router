@@ -2,19 +2,21 @@
 
 A real-time data governance pipeline built on Confluent Cloud. It checks every event against its region's privacy rule **while the data is still moving**, not in an audit after the fact.
 
+**4,938 events checked · 2,927 caught with personal data · every decision tagged with a reason.**
+
 Built in ~20 hours for a Confluent challenge.
 
 > **Status:** the live pipeline was shut down in November 2026. The results and screenshots below are from the September 2026 run. Everything needed to rebuild it is in this repo (see [How to Reproduce](#how-to-reproduce)).
 
 ## Demo
 
-[![Watch the demo on YouTube](https://img.youtube.com/vi/nBqiKxcUtZ4/maxresdefault.jpg)](https://youtu.be/nBqiKxcUtZ4)
+[![Watch the demo on YouTube](https://img.youtube.com/vi/nBqiKxcUtZ4/maxresdefault.jpg?v=2)](https://youtu.be/nBqiKxcUtZ4)
 
-*Click the image to watch the 2-minute demo on YouTube.*
+*▶ Click the image to watch the 2-minute demo on YouTube.*
 
 ## The Problem
 
-Companies that operate in more than one region (EU, US, etc.) have to make sure raw personal data, such as email addresses and phone numbers, does not flow downstream against that region's privacy rules. Checking this after the fact is slow and reactive. This project applies the rule **in-flight**, at the stream level, with every decision traceable.
+Companies that operate in more than one region (EU, US, etc.) have to make sure raw personal data, such as email addresses and phone numbers, does not flow downstream against that region's privacy rules. Checking this after the fact is slow and reactive: by the time an audit finds a leak, the data has already been copied into reports, logs and other systems. This project applies the rule **in-flight**, at the stream level, with every decision traceable.
 
 ## Compliance Rules
 
@@ -28,27 +30,27 @@ Violations are not pre-labelled. The Datagen connectors fill the `raw_email` and
 ## Architecture
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│ Datagen: EU      │     │ Datagen: US      │      ← Source Connectors
+┌──────────────────┐     ┌──────────────────┐
+│   Datagen: EU    │     │   Datagen: US    │   ← Source connectors
 └────────┬─────────┘     └────────┬─────────┘
          ↓                        ↓
-   topic: events.eu         topic: events.us       ← Schema Registry-validated (Avro)
+   topic: events.eu         topic: events.us     ← Schema Registry (Avro)
          ↓                        ↓
 ┌───────────────────────────────────────────┐
-│         Flink SQL — compliance logic         │      ← Stream Processing
-│  (per-region rule → status + reason fields) │
+│        Flink SQL — compliance logic       │   ← Stream processing
+│     per-region rule → status + reason     │
 └───────────────────────────────────────────┘
          ↓                        ↓
-    eu_checked                us_checked
+    eu_checked               us_checked
          ↓                        ↓
 ┌───────────────────────────────────────────┐
-│     topic: all_routed_events                │      ← Merged, tagged output
-│  (status: clean/quarantine + reason)        │
+│          topic: all_routed_events         │   ← Merged, tagged output
+│    status: clean / quarantine + reason    │
 └───────────────────────────────────────────┘
-                    ↓
-        Elasticsearch Sink V2 Connector          ← configured (see Known Limitations)
-                    ↓
-       Stream Catalog + Stream Lineage           ← Governance layer
+                      ↓
+      Elasticsearch Sink V2 connector          ← Configured (see Known Limitations)
+                      ↓
+       Stream Catalog + Stream Lineage          ← Governance layer
 ```
 
 ## Confluent Components Used
@@ -68,7 +70,7 @@ SELECT status, COUNT(*) AS cnt FROM all_routed_events GROUP BY status;
 - **2,927 events quarantined**
 - **2,011 events routed clean**
 
-**Sanity check:** since each PII field is null about 50% of the time, an EU event should be flagged ~75% of the time (email OR phone) and a US event ~50% of the time (email only). With roughly equal traffic that's ~62% expected. The run gave 2,927 / 4,938 = **59%**, which is in line with the rules genuinely detecting random PII.
+**Sanity check:** since each PII field is null about 50% of the time, an EU event should be flagged ~75% of the time (email OR phone) and a US event ~50% of the time (email only). With roughly equal traffic that's ~62% expected. The run gave 2,927 / 4,938 = **59%**, which is in line with the rules genuinely detecting random PII. That is why quarantined events outnumber clean ones: the test data is meant to be messy.
 
 *(Counts are a snapshot from one streaming run; the query keeps updating while the connectors run.)*
 
